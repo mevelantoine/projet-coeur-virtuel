@@ -3,15 +3,16 @@
 //Le PC est un long (vu qu'il correspond à une adresse)
 
 #include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char **argv){
     FILE *input;
     input = fopen(argv[1],"r");
 
     char line[100];
-    fgets(line,100,input);
-
+if( fgets (line, 100, input)!=NULL ) {
+      /* writing content to stdout */
+      puts(line);
+   }
 
     fclose(input);
 }
