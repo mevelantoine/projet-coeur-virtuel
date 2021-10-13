@@ -7,9 +7,11 @@
 
 int main(int argc, char **argv){
     FILE *input;
-    
     input = fopen(argv[1],"r");
 
-    printf("%s",input);
+    char line[100];
+    fgets(line,100,input);
+
+
     fclose(input);
 }
