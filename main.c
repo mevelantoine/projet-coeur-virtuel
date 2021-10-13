@@ -6,13 +6,16 @@
 
 int main(int argc, char **argv){
     FILE *input;
-    input = fopen(argv[1],"r");
+    input = fopen(argv[1],"rb");
 
     char line[100];
-if( fgets (line, 100, input)!=NULL ) {
-      /* writing content to stdout */
+    fread(line,100,1,input);
+    for(int i = 0; i<100; i++)
+    printf("%x ", line[i]);
+/*while( fgets (line, 100, input)!=NULL ) {
+     
       puts(line);
    }
-
+*/
     fclose(input);
 }
