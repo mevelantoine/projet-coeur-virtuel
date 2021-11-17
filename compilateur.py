@@ -15,10 +15,10 @@ dictOpcode = {
 }
 
 file = open(sys.argv[1],"rb")
-byte=file.read(1)
+byte=file.read(32)
 
 while byte:
     print(byte)
-    byte=file.read(1)
+    byte=file.read(32)
 
 file.close()
