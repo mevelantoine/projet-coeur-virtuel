@@ -2,7 +2,7 @@ import sys
 import re
 
 import os
-os.chdir("D:\Dev\Cours\projet-coeur-virtuel")
+#os.chdir("D:\Dev\Cours\projet-coeur-virtuel")
 
 def intTo8Bits(n):
     value = str(bin(int(n)))[2:]
@@ -42,6 +42,16 @@ opcodeRegistres = {
     "r15" : "1111"
 }
 
+opcodeBCC = {
+    "B" : "1000",
+    "BEQ" : "1001",
+    "BNE" : "1010",
+    "BLE" : "1011",
+    "BGE" : "1100",
+    "BL" : "1101",
+    "BG" : "1110"
+}
+
 #file = open(sys.argv[1],"rb")
 input = open("4plus4-correction.asm","r")
 output = open("out.o","wb")
@@ -71,6 +81,8 @@ for line in input:
                 immval=intTo8Bits(elements[2][2:])
                 dest = ope1
                 bcc="0000"
+            elif elements[0]=="cmp":
+                pass
             else:
                 ope2 = opcodeRegistres.get(elements[2])
                 IV="0"
@@ -84,7 +96,7 @@ for line in input:
         print("--------------------")
 
 
-file.close()
+input.close()
 
 '''
 11110001000011110000111100000000
