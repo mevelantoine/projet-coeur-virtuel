@@ -39,7 +39,7 @@ void add(struct coeur core, struct instruction inst){
     long res = 0;
     res = inst.ope1 + ivalueOrOpe2(core, inst);
     core.registers[inst.dest] = res;
-    //Si la valeur maximale dépasse le maximum d'un unsigned long
+    //Si la valeur maximale dépasse le maximum d'un long
     if (res > 18446744073709551615){core.carrFlag=1;}else{core.carrFlag=0;}
     if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
     if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
@@ -49,7 +49,7 @@ void sub(struct coeur core, struct instruction inst){
     long res = 0;
     res = inst.ope1 + ivalueOrOpe2(core, inst);
     core.registers[inst.dest] = res;
-    //Si la valeur maximale dépasse le maximum d'un unsigned long
+    //Si la valeur maximale rentre dans un long
     if (res > -9223372036854775808 && res < 18446744073709551615){core.carrFlag=0;}else{core.carrFlag=1;}
     if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
     if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
@@ -86,7 +86,46 @@ void mov(struct coeur core, struct instruction inst){
     core.registers[inst.dest] = ivalueOrOpe2(core,inst);
 }
 
-void fetch(struct coeur core, FILE* input){
+void adc(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 + ivalueOrOpe2(core, inst) + core.carrFlag;
+    core.registers[inst.dest] = res;
+    if (res > 18446744073709551615){core.carrFlag=1;}else{core.carrFlag=0;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void sbc(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 + ivalueOrOpe2(core, inst) + (core.carrFlag - 1);
+    core.registers[inst.dest] = res;
+    //Si la valeur maximale dépasse le maximum d'un unsigned long
+    if (res > -9223372036854775808 && res < 18446744073709551615){core.carrFlag=0;}else{core.carrFlag=1;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void lsh(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 << ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    //Si la valeur de départ est plus grande que 2^63, on aura un overflow vers la gauche
+    if (inst.ope1 > pow(2,63)){core.carrFlag=1;}else{core.carrFlag=0;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void lsh(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 << ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    //Si la valeur de départ est impaire, on aura un overflow vers la droite
+    if (inst.ope1 % 2 == 1){core.carrFlag=1;}else{core.carrFlag=0;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+int fetch(struct coeur core, FILE* input){
     char* line = NULL;
     unsigned long len = 0;
     int read = 0;
@@ -150,43 +189,55 @@ struct instruction decode(struct coeur core, int input){
         }
         i++;
     }
+    return output;
 }
 
-void execute(struct coeur core, struct instruction inst){
+void execute(struct coeur core, struct instruction inst, int verbose){
     switch (inst.opcd)
     {
         case 0x0:
             and(core,inst);
+            if (verbose){printf("AND %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x1:
             orr(core,inst);
+            if (verbose){printf("ORR %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x2:
             xor(core,inst);
+            if (verbose){printf("XOR %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x3:
             add(core,inst);
+            if (verbose){printf("ADD %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x4:
             adc(core,inst);
+            if (verbose){printf("ADC %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x5:
             cmp(core,inst);
+            if (verbose){printf("CMP %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x6:
             sub(core,inst);
+            if (verbose){printf("SUB %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x7:
             sbc(core,inst);
+            if (verbose){printf("SBC %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x8:
             mov(core,inst);
+            if (verbose){printf("MOV %d %d", inst.ope1, inst.ope2);}
             break;
         case 0x9:
             lsh(core,inst);
+            if (verbose){printf("LSH %d %d", inst.ope1, inst.ope2);}
             break;
         case 0xA:
             rsh(core,inst);
+            if (verbose){printf("RSH %d %d", inst.ope1, inst.ope2);}
             break; 
         default:
             break;
@@ -206,7 +257,8 @@ void initCore(struct coeur coreToInit){
 int main(int argc, char **argv){
     FILE* file = fopen("test.bin","rb");
     struct coeur testCore;
+    struct instruction currInst;
+    int verbose = 1;
     initCore(testCore);
-    fetch(testCore,file);
-    //decode()
+    execute(testCore,decode(testCore, fetch(testCore,file)),verbose);
 }
