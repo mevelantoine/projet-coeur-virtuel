@@ -13,7 +13,7 @@ struct coeur{
     long registers[15];
     int zeroFlag;
     int signFlag;
-    int compFlag;
+    int carrFlag;
 };
 
 struct instruction{
@@ -26,12 +26,70 @@ struct instruction{
     char bcc;
 };
 
+long ivalueOrOpe2(struct coeur core, struct instruction inst){
+    if (inst.ivflag){
+        return inst.immVal;
+    }
+    else{
+        return core.registers[inst.ope2];
+    }
+}
+
+void add(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 + ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    //Si la valeur maximale dépasse le maximum d'un unsigned long
+    if (res > 18446744073709551615){core.carrFlag=1;}else{core.carrFlag=0;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void sub(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 + ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    //Si la valeur maximale dépasse le maximum d'un unsigned long
+    if (res > -9223372036854775808 && res < 18446744073709551615){core.carrFlag=0;}else{core.carrFlag=1;}
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void orr(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 || ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    core.carrFlag=0;
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void and(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 && ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    core.carrFlag=0;
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void xor(struct coeur core, struct instruction inst){
+    long res = 0;
+    res = inst.ope1 ^ ivalueOrOpe2(core, inst);
+    core.registers[inst.dest] = res;
+    core.carrFlag=0;
+    if (res > 0){core.signFlag=0;}else{core.signFlag=1;}
+    if (res != 0){core.zeroFlag=0;}else{core.zeroFlag=1;}
+}
+
+void mov(struct coeur core, struct instruction inst){
+    core.registers[inst.dest] = ivalueOrOpe2(core,inst);
+}
 
 void fetch(struct coeur core, FILE* input){
     char* line = NULL;
     unsigned long len = 0;
     int read = 0;
-
 
     do
     {
@@ -94,16 +152,49 @@ struct instruction decode(struct coeur core, int input){
     }
 }
 
-void execute(struct instruction inst){
-    switch (inst.bcc)
+void execute(struct coeur core, struct instruction inst){
+    switch (inst.opcd)
     {
-    default:
-        break;
+        case 0x0:
+            and(core,inst);
+            break;
+        case 0x1:
+            orr(core,inst);
+            break;
+        case 0x2:
+            xor(core,inst);
+            break;
+        case 0x3:
+            add(core,inst);
+            break;
+        case 0x4:
+            adc(core,inst);
+            break;
+        case 0x5:
+            cmp(core,inst);
+            break;
+        case 0x6:
+            sub(core,inst);
+            break;
+        case 0x7:
+            sbc(core,inst);
+            break;
+        case 0x8:
+            mov(core,inst);
+            break;
+        case 0x9:
+            lsh(core,inst);
+            break;
+        case 0xA:
+            rsh(core,inst);
+            break; 
+        default:
+            break;
     }
 }
 
 void initCore(struct coeur coreToInit){
-    coreToInit.compFlag=0;
+    coreToInit.carrFlag=0;
     coreToInit.zeroFlag=0;
     coreToInit.signFlag=0;
 
