@@ -1,3 +1,3 @@
-mov r0, ;rentrer nombre random
-mov r1, ;rentrer nombre random
-mov r2, 0x0
+r0=0x2 ;rentrer nombre random
+r1=0x1 ;rentrer nombre random
+r2=0x0
