@@ -1,4 +1,0 @@
-L'instruction envoyée au processeur est en binaire, mais les données des registres sont en hexa, pourquoi comment ?
-Qui calcule la valeur de BCC ?
-Comment gérer la sortie du compilateur dans un binaire ?
-Comment sont gérés les jumps ?
